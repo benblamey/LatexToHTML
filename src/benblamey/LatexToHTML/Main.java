@@ -59,7 +59,8 @@ public class Main {
 	
 		String newLatex = "";
 		
-		boolean inPara = false;
+		Text inPara = Text.NonPara;
+		
 		boolean inTable = false;
 		boolean inTabular = false;
 		boolean inFigure = false;
@@ -68,6 +69,10 @@ public class Main {
 		final String headerCharacters = "^\\}";//"A-Za-z0-9 :\\(\\)\\+\\-\\.";
 		
 		for (String line : latex.split("([\\n\\r])")) {
+			
+			if (line.contains("The importance of reminiscence")) {
+				"".toCharArray();
+			}
 			
 			
 			if (line.equals("\\begin{document}")) 
@@ -175,22 +180,38 @@ public class Main {
 			
 			
 			line = Pattern.compile("\\\\begin\\{itemize\\}").matcher(line).replaceAll("<ul>");
-			line = Pattern.compile("\\\\end\\{itemize\\}").matcher(line).replaceAll("</ul>");
+			Matcher endItemizeMatcher = Pattern.compile("\\\\end\\{itemize\\}").matcher(line);
+			if (endItemizeMatcher.find()) {
+				inPara = Text.NonPara;
+			}
+			line = endItemizeMatcher.replaceAll("</ul>");
 			
 			line = Pattern.compile("\\\\begin\\{enumerate\\}").matcher(line).replaceAll("<ol>");
-			line = Pattern.compile("\\\\end\\{enumerate\\}").matcher(line).replaceAll("</ol>");
+			Matcher enumMatcher = Pattern.compile("\\\\end\\{enumerate\\}").matcher(line);
+			if (enumMatcher.find()) {
+				inPara = Text.NonPara;
+			}
+			line = enumMatcher.replaceAll("</ol>");
 			
 			
-			line = Pattern.compile("\\\\item\\[([^\\]]*)\\]").matcher(line).replaceAll("<li>");
+			Matcher itemMatcherAux = Pattern.compile("\\\\item\\[.*\\]").matcher(line);
+			if (itemMatcherAux.find()) {
+				inPara = Text.InPseudoPara;
+			}
+			line = itemMatcherAux.replaceAll("<li>");
+			Matcher itemMatcher = Pattern.compile("\\\\item (.*)$").matcher(line);
+			if (itemMatcher.find()) {
+				inPara = Text.InPseudoPara;
+			}
+			line = itemMatcher.replaceAll("<li>$1</li>");
 			
-			line = Pattern.compile("\\\\item (.*)$").matcher(line).replaceAll("<li>$1</li>");
 			
 			line = Pattern.compile("\\\\hline").matcher(line).replaceAll("<hr/>");
 			
 
 			
-			line = line.replace("\\begin{quote}", "<q>");
-			line = line.replace("\\end{quote}", "</q>");
+			line = line.replace("\\begin{quote}", "<div class=\"quote\">");
+			line = line.replace("\\end{quote}", "</div>");
 			
 			
 			line = Pattern.compile("\\\\nocite"
@@ -210,6 +231,11 @@ public class Main {
 			line = line.replace("\\#", "#");
 			line = line.replace("\\&", "&amp;");
 			line = line.replace("\\$", "&#36;");
+			
+			// I use these to mean "the reference in their bibliography".
+			line = line.replace("{[}", "[ext:");
+			line = line.replace("{]}", "]");
+			
 			
 			
 			line = line.replace("\\rightarrow", "&gt;");
@@ -244,24 +270,34 @@ public class Main {
 			//line  = subsubsection
 
 			
-			boolean IsRealText = Pattern.compile("^([a-zA-Z])").matcher(line).find();
+			
+			// This needs some work, doesn't detect:
+			//  \cite etc.
+			//  escaped characters.
+			boolean IsRealText = Pattern.compile("^[^\\\\\\{\\}< ]").matcher(line).find();
 			
 			
-			
-			if (IsRealText && !inPara)
-			{
-				newLatex += "<p>\n";
+			switch (inPara) {
+				case InNormalPara:
+					if (!IsRealText) {
+						newLatex += "</p>\n";
+						inPara = Text.NonPara;
+					}
+					break;
+				case InPseudoPara:
+					System.out.println("In Pseudo Para: " + line);
+					// Do nothing.
+					break;
+				case NonPara:
+					if (IsRealText)
+					{
+						newLatex += "<p>\n";
+						inPara = Text.InNormalPara;
+					}
+					break;
 			}
-			else if (!IsRealText && inPara) {
-				newLatex += "</p>\n";
-			}
 			
-			inPara = IsRealText;
-			
-			if (inPara) {
-
-			}
-			
+						
 			//
 			
 			newLatex += line + "\n";
