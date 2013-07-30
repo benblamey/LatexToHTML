@@ -294,6 +294,7 @@ public class Main {
 		final String before ="<!DOCTYPE html>\n" +
 				"<html>\n" +
 				"<head>\n" +
+				"<link rel=\"stylesheet\" type=\"text/css\" href=\"tex_styles.css\">\n"+
 				"</head>\n" +
 				"<body>\n";
 		final String after ="</body>\n</html>\n";			
