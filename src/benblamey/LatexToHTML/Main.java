@@ -155,7 +155,7 @@ public class Main {
 			line = title.replaceAll("<h1>$1</h1>");
 			
 			Matcher author = Pattern.compile("\\\\author\\{(["+headerCharacters+"]+)\\}").matcher(line);
-			line = author.replaceAll("<p>by $1.</p>");
+			line = author.replaceAll("<p class=\"author\">$1</p>");
 			
 			
 			Matcher chapter = Pattern.compile("\\\\chapter\\{(["+headerCharacters+"]+)\\}").matcher(line);
@@ -168,10 +168,10 @@ public class Main {
 			line  = subsection.replaceAll("<h4>$1</h4>");
 			
 			Matcher subsubsection = Pattern.compile("\\\\subsubsection\\{(["+headerCharacters+"]+)\\}").matcher(line);
-			line  = subsubsection.replaceAll("<h4>$1</h4>");
+			line  = subsubsection.replaceAll("<h5>$1</h5>");
 			
 			Matcher paragraph = Pattern.compile("\\\\paragraph\\{(["+headerCharacters+"]+)\\}").matcher(line);
-			line  = paragraph.replaceAll("<h5>$1</h5>");
+			line  = paragraph.replaceAll("<h6>$1</h6>");
 			
 			
 			
@@ -210,7 +210,7 @@ public class Main {
 			
 
 			
-			line = line.replace("\\begin{quote}", "<div class=\"quote\">");
+			line = line.replace("\\begin{quote}", "<div class=\"blockquote\">");
 			line = line.replace("\\end{quote}", "</div>");
 			
 			
@@ -274,7 +274,7 @@ public class Main {
 			// This needs some work, doesn't detect:
 			//  \cite etc.
 			//  escaped characters.
-			boolean IsRealText = Pattern.compile("^[^\\\\\\{\\}< ]").matcher(line).find();
+			boolean IsRealText = Pattern.compile("^[^\\\\\\{\\}< \\t]").matcher(line).find();
 			
 			
 			switch (inPara) {
@@ -285,12 +285,13 @@ public class Main {
 					}
 					break;
 				case InPseudoPara:
-					System.out.println("In Pseudo Para: " + line);
+					//System.out.println("In Pseudo Para: " + line);
 					// Do nothing.
 					break;
 				case NonPara:
 					if (IsRealText)
 					{
+						//System.out.println("Starting Para: " + line);
 						newLatex += "<p>\n";
 						inPara = Text.InNormalPara;
 					}
@@ -312,7 +313,22 @@ public class Main {
 		
 		newLatex = Pattern.compile("\\\\emph\\{([^\\}]+)\\}").matcher(newLatex).replaceAll("<i>$1</i>");
 		
-		newLatex = Pattern.compile("\\\\footnote\\{([^\\}]+)\\}").matcher(newLatex).replaceAll("<a href=\"javascript:alert('$1')\">&dagger;</a>");
+
+		do {
+			Matcher footnoteMatcher = Pattern.compile("\\\\footnote\\{([^\\}]+)\\}").matcher(newLatex);
+			if (!footnoteMatcher.find()) {
+				break;
+			}
+			
+			String footnoteText = footnoteMatcher.group(1).toString();
+			footnoteText = EscapeJavascriptString(footnoteText);
+			//System.out.println(footnoteText);
+			
+			newLatex = newLatex.substring(0, footnoteMatcher.start())
+					+ "<a href=\"javascript:alert('"+footnoteText+"')\">&dagger;</a>"
+					+ newLatex.substring(footnoteMatcher.end(), newLatex.length() );
+			
+		} while (true);
 		
 		
 		// Matches over multiple lines by default.
@@ -352,6 +368,10 @@ public class Main {
 	    writer = new BufferedWriter( new FileWriter( "C:\\work\\docs\\PHD_Work\\writing\\thesis.html"));
 	    writer.write( yourstring);
 	    writer.close( );
+	}
+	
+	static String EscapeJavascriptString(String s) {
+		return s.replace("\"", "");
 	}
 
 }
