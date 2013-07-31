@@ -1,13 +1,20 @@
 package benblamey.LatexToHTML;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static java.nio.file.StandardWatchEventKinds.*;
@@ -27,34 +34,59 @@ public class Main {
 	/**
 	 * @param args
 	 * @throws IOException 
+	 * @throws InterruptedException 
 	 */
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 		
-		String source = "C:\\work\\docs\\PHD_Work\\writing\\thesis.tex";
+		final String dir = "C:\\work\\docs\\PHD_Work\\writing\\";
 		
-		
+		File folder = new File(dir);
+		File[] listOfFiles = folder.listFiles();
 
-//		Path dir =P 
-//				
-//				new Path("C:\\work\\docs\\PHD_Work\\writing\\");
-//		
-//		try {
-//			
-//			
-//			
-//		    WatchKey key = dir.register(watcher,
-//		                           ENTRY_CREATE,
-//		                           ENTRY_DELETE,
-//		                           ENTRY_MODIFY);
-//		} catch (IOException x) {
-//		    System.err.println(x);
-//		}
+		for (int i = 0; i < listOfFiles.length; i++) {
+
+			if (listOfFiles[i].isFile()) {
+				String file = listOfFiles[i].getName();
+				
+				if (file.endsWith(".tex")) {
+					latexToHTML(dir + file);
+				}
+			}
+		}
 		
-		DoIT(source);
+        //define a folder root
+        Path myDir = Paths.get(dir);
+        WatchService watcher = myDir.getFileSystem().newWatchService();
+        myDir.register(watcher, ENTRY_MODIFY);
+
+        do {
+
+           WatchKey watckKey = watcher.poll();
+
+           if (watckKey != null) {
+	           List<WatchEvent<?>> events = watckKey.pollEvents();
+	           for (WatchEvent event : events) {
+                    String filename = event.context().toString();
+                    if (filename.endsWith(".tex")) {          
+                    	latexToHTML(dir + filename);
+                    }
+	           }
+	           
+	           watckKey.reset();
+           }
+           
+           Thread.sleep(500);
+           
+
+        } while (true);
+        
 	}
 
-	private static void DoIT(String source) throws IOException {
-		String latex = readFile(source, Charset.defaultCharset());
+	private static void latexToHTML(String sourcePath) throws IOException {
+		
+		System.out.println("Reading " + sourcePath + "...");
+		
+		String latex = readFile(sourcePath, Charset.defaultCharset());
 		
 	
 		String newLatex = "";
@@ -351,8 +383,8 @@ public class Main {
 				"<body>\n";
 		final String after ="</body>\n</html>\n";			
 		String output = before + newLatex + after;
-					
-		writeFile(output);
+			
+		writeFile(sourcePath.substring(0, sourcePath.length() - 4) + ".html", output);
 	}
 	
 	static String readFile(String path, Charset encoding) 
@@ -363,11 +395,13 @@ public class Main {
 			}
 	
 
-	static void writeFile(String yourstring) throws IOException {
+	static void writeFile(String path, String yourstring) throws IOException {
 		BufferedWriter writer = null;
-	    writer = new BufferedWriter( new FileWriter( "C:\\work\\docs\\PHD_Work\\writing\\thesis.html"));
+	    writer = new BufferedWriter( new FileWriter( path));
 	    writer.write( yourstring);
 	    writer.close( );
+	    
+	    System.out.println("Finished writing " + path);
 	}
 	
 	static String EscapeJavascriptString(String s) {
