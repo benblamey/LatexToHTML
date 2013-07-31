@@ -104,10 +104,12 @@ public class Main {
 			}
 			
 			
-			if (line.equals("\\begin{document}")) 
+			if (line.equals("\\begin{document}"))
 			{
 				docStarted = true;
 				continue;
+			} else if (line.startsWith("\\chapter")) {
+				docStarted = true;
 			} else if (!docStarted) {
 				continue;
 			}
