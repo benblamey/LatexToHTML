@@ -74,9 +74,7 @@ public class Main {
 	           
 	           watckKey.reset();
            }
-           
            Thread.sleep(500);
-           
 
         } while (true);
         
@@ -87,7 +85,6 @@ public class Main {
 		System.out.println("Reading " + sourcePath + "...");
 		
 		String latex = readFile(sourcePath, Charset.defaultCharset());
-		
 	
 		String newLatex = "";
 		
