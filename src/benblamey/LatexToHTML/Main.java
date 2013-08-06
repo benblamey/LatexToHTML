@@ -404,7 +404,7 @@ public class Main {
 	}
 	
 	static String EscapeJavascriptString(String s) {
-		return s.replace("\"", "");
+		return s.replace("\"", "\\\"").replace("'", "\\\'");
 	}
 
 }
