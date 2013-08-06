@@ -108,6 +108,8 @@ public class Main {
 			{
 				docStarted = true;
 				continue;
+			} else if (line.contains("\\chapter{") || line.contains("\\section{")) {
+				docStarted = true;
 			} else if (!docStarted) {
 				continue;
 			}
