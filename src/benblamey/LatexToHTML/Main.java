@@ -108,7 +108,7 @@ public class Main {
 			{
 				docStarted = true;
 				continue;
-			} else if (line.startsWith("\\chapter")) {
+			} else if (line.contains("\\chapter{") || line.contains("\\section{")) {
 				docStarted = true;
 			} else if (!docStarted) {
 				continue;
@@ -410,7 +410,7 @@ public class Main {
 	}
 	
 	static String EscapeJavascriptString(String s) {
-		return s.replace("\"", "");
+		return s.replace("\"", "\\\"").replace("'", "\\\'");
 	}
 
 }
