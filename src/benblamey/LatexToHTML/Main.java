@@ -1,13 +1,13 @@
 package benblamey.LatexToHTML;
 
+import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,7 +17,6 @@ import java.nio.file.WatchService;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static java.nio.file.StandardWatchEventKinds.*;
 
 /**
  * 
@@ -65,7 +64,7 @@ public class Main {
 
            if (watckKey != null) {
 	           List<WatchEvent<?>> events = watckKey.pollEvents();
-	           for (WatchEvent event : events) {
+	           for (WatchEvent<?> event : events) {
                     String filename = event.context().toString();
                     if (filename.endsWith(".tex")) {          
                     	latexToHTML(dir + filename);
@@ -410,7 +409,7 @@ public class Main {
 	}
 	
 	static String EscapeJavascriptString(String s) {
-		return s.replace("\"", "\\\"").replace("'", "\\\'");
+		return s.replace("\"", "\\&quot;").replace("'", "\\\'");
 	}
 
 }
