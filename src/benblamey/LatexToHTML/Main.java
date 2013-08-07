@@ -374,9 +374,15 @@ public class Main {
 		newLatex = newLatex.replaceAll("\\\\begin\\{table\\}.+\\\\end\\{table\\}", "[Table Removed.]");
 		
 		
+		File sourcePathFilePath = new File(sourcePath);
+		String sourcePathFile = sourcePathFilePath.getName();
+		sourcePathFile = sourcePathFile.substring(0, sourcePathFile.lastIndexOf('.'));
+		
+		
 		final String before ="<!DOCTYPE html>\n" +
 				"<html>\n" +
 				"<head>\n" +
+				"<title>" + sourcePathFile + "</title>" +
 				"<link rel=\"stylesheet\" type=\"text/css\" href=\"tex_styles.css\">\n"+
 				"</head>\n" +
 				"<body>\n";
