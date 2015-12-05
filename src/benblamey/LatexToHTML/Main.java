@@ -1,13 +1,13 @@
 package benblamey.LatexToHTML;
 
+import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,7 +17,6 @@ import java.nio.file.WatchService;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static java.nio.file.StandardWatchEventKinds.*;
 
 /**
  * 
@@ -38,7 +37,7 @@ public class Main {
 	 */
 	public static void main(String[] args) throws IOException, InterruptedException {
 		
-		final String dir = "C:\\work\\docs\\PHD_Work\\writing\\";
+		final String dir = "C:\\work\\docs\\PHD_Work\\thesis\\";
 		
 		File folder = new File(dir);
 		File[] listOfFiles = folder.listFiles();
@@ -153,11 +152,12 @@ public class Main {
 
 			{
 			Matcher comments = Pattern.compile(" %(.*)$").matcher(line);
-			line = comments.replaceAll("");
+			//line = comments.replaceAll("");
 			}
 			{
 				Matcher comments = Pattern.compile("^%(.*)$").matcher(line);
-				line = comments.replaceAll("");
+				//comments.
+				//line = comments.replaceAll("");
 			}
 			
 			line = Pattern.compile("\\\\usepackage.*").matcher(line).replaceAll("");
@@ -352,12 +352,16 @@ public class Main {
 			}
 			
 			String footnoteText = footnoteMatcher.group(1).toString();
-			footnoteText = EscapeJavascriptString(footnoteText);
+			//footnoteText = EscapeJavascriptString(footnoteText);
 			//System.out.println(footnoteText);
 			
 			newLatex = newLatex.substring(0, footnoteMatcher.start())
-					+ "<a href=\"javascript:alert('"+footnoteText+"')\">&dagger;</a>"
+					
+					+" (<i>Footnote: "+footnoteText+"</i>) "
+					//+ "<a href=\"javascript:alert('"+footnoteText+"')\">&dagger;</a>"
 					+ newLatex.substring(footnoteMatcher.end(), newLatex.length() );
+		
+			
 			
 		} while (true);
 		
